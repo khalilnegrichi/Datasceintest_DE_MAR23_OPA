@@ -1,9 +1,5 @@
-CREATE DATABASE IF NOT EXISTS DB_KNFN_OPA;
-
-USE DB_KNFN_OPA;
-
 CREATE TABLE IF NOT EXISTS cryptocurrency (
-  id INT NOT NULL AUTO_INCREMENT,
+  id SERIAL NOT NULL,
   name VARCHAR(10) NOT NULL,
   symbol VARCHAR(5) NOT NULL,
   creation_date DATE NOT NULL,
@@ -11,19 +7,19 @@ CREATE TABLE IF NOT EXISTS cryptocurrency (
 );
 
 CREATE TABLE IF NOT EXISTS realtime_data (
-  id INT NOT NULL AUTO_INCREMENT,
+  id SERIAL NOT NULL,
   cryptocurrency_id INT NOT NULL,
-  date DATE NOT NULL,
+  date TIMESTAMPTZ NOT NULL,
   price DECIMAL(10,2) NOT NULL,
-  PRIMARY KEY (id),
+  PRIMARY KEY (id, date),
   FOREIGN KEY (cryptocurrency_id) REFERENCES cryptocurrency (id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS historical_data (
-  id INT NOT NULL AUTO_INCREMENT,
+  id SERIAL NOT NULL,
   cryptocurrency_id INT NOT NULL,
-  time_start DATE NOT NULL,
-  time_end DATE NOT NULL,
+  time_start TIMESTAMPTZ NOT NULL,
+  time_end TIMESTAMPTZ NOT NULL,
   price DECIMAL(10,2) NOT NULL,
   open DECIMAL(10,2) NOT NULL,
   price_high DECIMAL(10,2) NOT NULL,
@@ -31,6 +27,12 @@ CREATE TABLE IF NOT EXISTS historical_data (
   price_low DECIMAL(10,2) NOT NULL,
   price_close DECIMAL(10,2) NOT NULL,
   trades_count INT NOT NULL,
-  PRIMARY KEY (id),
+  PRIMARY KEY (id, time_start),
   FOREIGN KEY (cryptocurrency_id) REFERENCES cryptocurrency (id) ON DELETE CASCADE
 );
+
+CREATE INDEX ON realtime_data(date DESC);
+CREATE INDEX ON historical_data(time_start DESC);
+
+SELECT create_hypertable('historical_data', 'time_start');
+SELECT create_hypertable('realtime_data', 'date');
