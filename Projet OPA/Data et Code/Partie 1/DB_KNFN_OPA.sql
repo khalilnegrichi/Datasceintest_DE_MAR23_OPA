@@ -31,8 +31,8 @@ CREATE TABLE IF NOT EXISTS historical_data (
   FOREIGN KEY (cryptocurrency_id) REFERENCES cryptocurrency (id) ON DELETE CASCADE
 );
 
-CREATE INDEX ON realtime_data(date DESC);
-CREATE INDEX ON historical_data(time_start DESC);
+CREATE INDEX ON realtime_data(date DESC); --  ???? Fadil
+CREATE INDEX ON historical_data(time_start DESC);  --  ???? Fadil
 
-SELECT create_hypertable('historical_data', 'time_start');
-SELECT create_hypertable('realtime_data', 'date');
+SELECT create_hypertable('historical_data', 'time_start'); --  ???? Fadil
+SELECT create_hypertable('realtime_data', 'date'); --  ???? Fadil
