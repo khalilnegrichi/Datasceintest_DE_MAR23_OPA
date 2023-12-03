@@ -39,7 +39,7 @@ def GetPredictionModel():
     return Model
 
 
-def SaveModelPredictionDataToModelPredictionTable(strIdOftheCrypto:str,intBuySignal:str,intSellSignal:str, Conn , strQueryName:str="StrAddTodateToModelPredictionTableQuery"):
+def SaveModelPredictionDataToModelPredictionTable(strIdOftheCrypto:str,intBuySignal:str,intSellSignal:str, ftLastCryptoValue:float, ftPrediction: float, Conn , strQueryName:str="StrAddTodateToModelPredictionTableQuery"):
     """
     This function allows to save model run data to execution table
 
@@ -53,7 +53,7 @@ def SaveModelPredictionDataToModelPredictionTable(strIdOftheCrypto:str,intBuySig
     logging.debug("Entering SaveModelTrainDataToRealModelRunTable function")
 
     logging.info(f"Building query to put date into model update database for crypto {strIdOftheCrypto}")
-    strBuiltQueryToAdd:str = config(strQueryName).format(strIdOftheCrypto,intBuySignal, intSellSignal)
+    strBuiltQueryToAdd:str = config(strQueryName).format(strIdOftheCrypto,intBuySignal, intSellSignal, ftLastCryptoValue, ftPrediction)
     
     logging.info(f"Sending data for crypto {strIdOftheCrypto} to the model update database")
     cursor = Conn.cursor()
@@ -85,18 +85,14 @@ def main():
     logging.info('Getting connection object from factory ConnectToDatabase function')
     Conn = Factory.ConnectToDatabase()
 
-    print(dfCryptoData["price"].iloc[-1])
-    print(prediction[-1])
-
-
     logging.info('Check if the price of the crypto is going to rise ou la dernière valeur enregistré est {} et la prédiction est {}'.format(dfCryptoData["price"].iloc[-1], prediction[-1]))
 
     if prediction[-1] > dfCryptoData["price"].iloc[-1]:
         logging.info('Save Litecoin sell signal as the price is going to rise')
-        SaveModelPredictionDataToModelPredictionTable(strIdOftheCrypto=3, intBuySignal=0, intSellSignal=1, Conn=Conn)
+        SaveModelPredictionDataToModelPredictionTable(strIdOftheCrypto=3, intBuySignal=0, intSellSignal=1, ftLastCryptoValue = dfCryptoData["price"].iloc[-1], ftPrediction = prediction[-1],Conn=Conn)
     else:
         logging.info('Save Litecoin buy signal as the price is going to lower')
-        SaveModelPredictionDataToModelPredictionTable(strIdOftheCrypto=3, intBuySignal=1, intSellSignal=0, Conn=Conn)
+        SaveModelPredictionDataToModelPredictionTable(strIdOftheCrypto=3, intBuySignal=1, intSellSignal=0,ftLastCryptoValue = dfCryptoData["price"].iloc[-1], ftPrediction = prediction[-1], Conn=Conn)
 
 
 if __name__ == "__main__":
@@ -118,5 +114,5 @@ if __name__ == "__main__":
 
     logger.addHandler(fhFileHandler)
 
-    
+
     main()
