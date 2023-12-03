@@ -7,9 +7,9 @@ from sklearn.metrics import mean_squared_error
 import pickle
 from decouple import config
 import logging
-
+from logging.handlers import RotatingFileHandler
 import Factory
-
+import os
 
 
 
@@ -41,7 +41,7 @@ def TrainPredictionModel(data):
 def CheckIfNewModelIsBetterThanOldModel(newModel, X_test, y_test):
     logging.debug('Entering CheckIfNewModelIsBetterThanOldModel function')
 
-    StrOldModelPath = config("strPathOfModels") + config("strPathOfBitcoinModel")
+    StrOldModelPath = config("strPathOfModels") + config("strPathOfEthereumModel")
     oldModel = pickle.load(open(StrOldModelPath, 'rb'))
 
     ftOldModelScore = oldModel.score(X_test, y_test)
@@ -101,8 +101,6 @@ def main():
     logging.info('get the data from the database')
     dfCryptoData = Factory.ReadDataFromDatabase(engine, strCryptoQuery="strQueryEthereumTable")
 
-    print(dfCryptoData.head())
-
     logging.info('train the new model on the new data')
     model, X_test, y_test = TrainPredictionModel(dfCryptoData)
 
@@ -124,4 +122,24 @@ def main():
 
 
 if __name__ == "__main__":
+
+    
+    LOGFILENAME = os.path.basename(__file__).replace("py", "log")
+
+    logger = logging.getLogger()
+
+    fhFileHandler = RotatingFileHandler(os.path.join(config("DEBUGDIR"), LOGFILENAME),\
+                                        maxBytes=10 * 1024 * 1024, backupCount=3)
+    ffFormatter = logging.Formatter('%(asctime)s|%(module)s|%(lineno)d|%(levelname)s|%(message)s')
+    fhFileHandler.setFormatter(ffFormatter)
+
+    # Set the log level for the file handler
+    fhFileHandler.setLevel(logging.DEBUG)
+    # Set the log level for the logger
+    logger.setLevel(logging.DEBUG)
+
+    logger.addHandler(fhFileHandler)
+
+
+
     main()
