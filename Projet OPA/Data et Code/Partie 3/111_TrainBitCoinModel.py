@@ -53,9 +53,9 @@ def CheckIfNewModelIsBetterThanOldModel(newModel, X_test, y_test):
     logging.debug('Exiting CheckIfNewModelIsBetterThanOldModel function')
 
     if ftNewModelScore > ftOldModelScore:
-        return True
+        return (True, ftOldModelScore, ftNewModelScore)
     else:
-        return False
+        return (False, ftOldModelScore, ftNewModelScore)
     
 
 def SaveModelToPath(model):
@@ -67,7 +67,7 @@ def SaveModelToPath(model):
     logging.debug('Exiting SaveModelToPath function')
 
 
-def SaveModelTrainDataToRealModelRunTable(strIdOftheCrypto:str,intModelRun:str,intModelUpdate:str, Conn , strQueryName:str="StrAddTodateToModelUpdateTableQuery"):
+def SaveModelTrainDataToRealModelRunTable(strIdOftheCrypto:str,intModelRun:str,intModelUpdate:str, ftOldModelScore:float, ftNewModelScore:float, Conn , strQueryName:str="StrAddTodateToModelUpdateTableQuery"):
     """
     This function allows to save model run data to execution table
 
@@ -81,7 +81,7 @@ def SaveModelTrainDataToRealModelRunTable(strIdOftheCrypto:str,intModelRun:str,i
     logging.debug("Entering SaveModelTrainDataToRealModelRunTable function")
 
     logging.info(f"Building query to put date into model update database for crypto {strIdOftheCrypto}")
-    strBuiltQueryToAdd:str = config(strQueryName).format(strIdOftheCrypto,intModelRun, intModelUpdate)
+    strBuiltQueryToAdd:str = config(strQueryName).format(strIdOftheCrypto,intModelRun, intModelUpdate, ftOldModelScore, ftNewModelScore)
     
     logging.info(f"Sending data for crypto {strIdOftheCrypto} to the model update database")
     cursor = Conn.cursor()
@@ -105,7 +105,7 @@ def main():
     model, X_test, y_test = TrainPredictionModel(dfCryptoData)
 
     logging.info('check if the new model is better performing than the old model')
-    blNewModelBetter = CheckIfNewModelIsBetterThanOldModel(model, X_test, y_test)
+    blNewModelBetter, ftOldModelScore, ftNewModelScore = CheckIfNewModelIsBetterThanOldModel(model, X_test, y_test)
 
     # if the new model is better, save it to the models folder
     logging.info('Getting connection object from factory ConnectToDatabase function')
@@ -115,10 +115,10 @@ def main():
         logging.info('Saving the new model to the model folder')
         SaveModelToPath(model)
         logging.info('Add the record with updated model = 1 to the model table')
-        SaveModelTrainDataToRealModelRunTable(strIdOftheCrypto=1,intModelRun=1,intModelUpdate=1, Conn=Conn)
+        SaveModelTrainDataToRealModelRunTable(strIdOftheCrypto=1,intModelRun=1,intModelUpdate=1, ftOldModelScore=ftOldModelScore, ftNewModelScore=ftNewModelScore, Conn=Conn)
     else:
         logging.info('Add the record with updated model = 0 to the model table')
-        SaveModelTrainDataToRealModelRunTable(strIdOftheCrypto=1,intModelRun=1,intModelUpdate=0, Conn=Conn)
+        SaveModelTrainDataToRealModelRunTable(strIdOftheCrypto=1,intModelRun=1,intModelUpdate=0, ftOldModelScore=ftOldModelScore, ftNewModelScore=ftNewModelScore, Conn=Conn)
 
 
 if __name__ == "__main__":
