@@ -95,6 +95,23 @@ def SaveModelTrainDataToRealModelRunTable(strIdOftheCrypto:str,intModelRun:str,i
 
 def main():
 
+    
+    LOGFILENAME = os.path.basename(__file__).replace("py", "log")
+
+    logger = logging.getLogger()
+
+    fhFileHandler = RotatingFileHandler(os.path.join(config("DEBUGDIR"), LOGFILENAME),\
+                                        maxBytes=10 * 1024 * 1024, backupCount=3)
+    ffFormatter = logging.Formatter('%(asctime)s|%(module)s|%(lineno)d|%(levelname)s|%(message)s')
+    fhFileHandler.setFormatter(ffFormatter)
+
+    # Set the log level for the file handler
+    fhFileHandler.setLevel(logging.DEBUG)
+    # Set the log level for the logger
+    logger.setLevel(logging.DEBUG)
+
+    logger.addHandler(fhFileHandler)
+
     logging.info('create an engine to connect to the database')
     engine = Factory.GetConnectionEngineToDatabase()
 
@@ -122,21 +139,4 @@ def main():
 
 
 if __name__ == "__main__":
-
-    LOGFILENAME = os.path.basename(__file__).replace("py", "log")
-
-    logger = logging.getLogger()
-
-    fhFileHandler = RotatingFileHandler(os.path.join(config("DEBUGDIR"), LOGFILENAME),\
-                                        maxBytes=10 * 1024 * 1024, backupCount=3)
-    ffFormatter = logging.Formatter('%(asctime)s|%(module)s|%(lineno)d|%(levelname)s|%(message)s')
-    fhFileHandler.setFormatter(ffFormatter)
-
-    # Set the log level for the file handler
-    fhFileHandler.setLevel(logging.DEBUG)
-    # Set the log level for the logger
-    logger.setLevel(logging.DEBUG)
-
-    logger.addHandler(fhFileHandler)
-
     main()

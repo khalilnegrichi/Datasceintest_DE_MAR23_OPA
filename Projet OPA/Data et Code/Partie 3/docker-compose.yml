@@ -1,0 +1,23 @@
+services:
+  timescaledb:
+    image: timescale/timescaledb:latest-pg12
+    restart: always
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: timescaledb
+      POSTGRES_PASSWORD: password
+    volumes:
+      - /data/timescaledb:/var/lib/postgresql/data
+
+  tradetraincrypto:
+    image: khalilnegrichi/traintradecrypto:1.0.0
+    restart: always
+    ports:
+      - 8000:8000
+    volumes:
+        - /home/ubuntu/Projet_OPA_Docker/models:/home/ubuntu/Projet_OPA_Docker/models
+        - /home/ubuntu/Projet_OPA_Docker/logs:/home/ubuntu/Projet_OPA_Docker/logs
+
+
+  

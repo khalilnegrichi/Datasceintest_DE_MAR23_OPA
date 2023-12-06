@@ -31,7 +31,7 @@ def PrepareData(data):
 def GetPredictionModel():
     logging.debug('Entering GetPredictionModel function')
 
-    StrOldModelPath = config("strPathOfModels") + config("strPathOfLitecoinModel")
+    StrOldModelPath = config("strPathOfModels") + config("strPathOfBitcoinModel")
     Model = pickle.load(open(StrOldModelPath, 'rb'))
 
     logging.debug('Exiting GetPredictionModel function')
@@ -39,7 +39,7 @@ def GetPredictionModel():
     return Model
 
 
-def SaveModelPredictionDataToModelPredictionTable(strIdOftheCrypto:str,intBuySignal:str,intSellSignal:str, ftLastCryptoValue:float, ftPrediction: float, Conn , strQueryName:str="StrAddTodateToModelPredictionTableQuery"):
+def SaveModelPredictionDataToModelPredictionTable(strIdOftheCrypto:str,intBuySignal:str,intSellSignal:str, ftLastCryptoValue:float, ftPrediction:float , Conn , strQueryName:str="StrAddTodateToModelPredictionTableQuery"):
     """
     This function allows to save model run data to execution table
 
@@ -67,37 +67,7 @@ def SaveModelPredictionDataToModelPredictionTable(strIdOftheCrypto:str,intBuySig
 
 
 def main():
-    logging.info('create an engine to connect to the database')
-    engine = Factory.GetConnectionEngineToDatabase()
 
-    logging.info('get the data from the database for Litecoin')
-    dfCryptoData = Factory.ReadDataFromDatabase(engine, strCryptoQuery="strQueryLitecoinTable")
-
-    logging.info('Preparing data for prediction for Litecoin')
-    X = PrepareData(dfCryptoData)
-
-    logging.info('Loading prediction model for Litecoin')
-    Prediction_Model = GetPredictionModel()
-
-    logging.info('Perform prediction for Litecoin')
-    prediction = Prediction_Model.predict(X)
-
-    logging.info('Getting connection object from factory ConnectToDatabase function')
-    Conn = Factory.ConnectToDatabase()
-
-    logging.info('Check if the price of the crypto is going to rise ou la dernière valeur enregistré est {} et la prédiction est {}'.format(dfCryptoData["price"].iloc[-1], prediction[-1]))
-
-    if prediction[-1] > dfCryptoData["price"].iloc[-1]:
-        logging.info('Save Litecoin sell signal as the price is going to rise')
-        SaveModelPredictionDataToModelPredictionTable(strIdOftheCrypto=3, intBuySignal=0, intSellSignal=1, ftLastCryptoValue = dfCryptoData["price"].iloc[-1], ftPrediction = prediction[-1],Conn=Conn)
-    else:
-        logging.info('Save Litecoin buy signal as the price is going to lower')
-        SaveModelPredictionDataToModelPredictionTable(strIdOftheCrypto=3, intBuySignal=1, intSellSignal=0,ftLastCryptoValue = dfCryptoData["price"].iloc[-1], ftPrediction = prediction[-1], Conn=Conn)
-
-
-if __name__ == "__main__":
-
-    
     LOGFILENAME = os.path.basename(__file__).replace("py", "log")
 
     logger = logging.getLogger()
@@ -115,4 +85,33 @@ if __name__ == "__main__":
     logger.addHandler(fhFileHandler)
 
 
+    logging.info('create an engine to connect to the database')
+    engine = Factory.GetConnectionEngineToDatabase()
+
+    logging.info('get the data from the database for Bitcoin')
+    dfCryptoData = Factory.ReadDataFromDatabase(engine, strCryptoQuery="strQueryBitCoinTable")
+
+    logging.info('Preparing data for prediction for Bitcoin')
+    X = PrepareData(dfCryptoData)
+
+    logging.info('Loading prediction model for Bitcoin')
+    Prediction_Model = GetPredictionModel()
+
+    logging.info('Perform prediction for Bitcoin')
+    prediction = Prediction_Model.predict(X)
+
+    logging.info('Getting connection object from factory ConnectToDatabase function')
+    Conn = Factory.ConnectToDatabase()
+
+    logging.info('Check if the price of the crypto is going to rise ou la dernière valeur enregistré est {} et la prédiction est {}'.format(dfCryptoData["price"].iloc[-1], prediction[-1]))
+
+    if prediction[-1] > dfCryptoData["price"].iloc[-1]:
+        logging.info('Save Bitcoin sell signal as the price is going to rise')
+        SaveModelPredictionDataToModelPredictionTable(strIdOftheCrypto=1,intBuySignal=0,intSellSignal=1, ftLastCryptoValue = dfCryptoData["price"].iloc[-1], ftPrediction = prediction[-1], Conn=Conn)
+    else:
+        logging.info('Save Bitcoin buy signal as the price is going to lower')
+        SaveModelPredictionDataToModelPredictionTable(strIdOftheCrypto=1,intBuySignal=1,intSellSignal=0, ftLastCryptoValue = dfCryptoData["price"].iloc[-1], ftPrediction = prediction[-1], Conn=Conn)
+
+
+if __name__ == "__main__":
     main()
